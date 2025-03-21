@@ -166,6 +166,9 @@ class BaseDataset(Dataset):
                 else:
                     raise FileNotFoundError(f"{self.prefix}{p} does not exist")
             im_files = sorted(x.replace("/", os.sep) for x in f if x.split(".")[-1].lower() in IMG_FORMATS)
+            self.image_ids = [im.split(os.sep)[-1].split("_")[0] for im in im_files]
+            self.n_images = len(list(set(self.image_ids)))
+            self.image_ids = [[imf for imf, f in enumerate(im_files) if f.split(os.sep)[-1].split("_")[0]==name] for name in self.image_names]
             # self.img_files = sorted([x for x in f if x.suffix[1:].lower() in IMG_FORMATS])  # pathlib
             assert im_files, f"{self.prefix}No images found in {img_path}. {FORMATS_HELP_MSG}"
         except Exception as e:
@@ -364,8 +367,9 @@ class BaseDataset(Dataset):
         self.batch = bi  # batch index of image
 
     def __getitem__(self, index):
-        """Return transformed label information for given index."""
-        return self.transforms(self.get_image_and_label(index))
+        """Return transformed label information for given index.""" 
+        item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]] 
+        return torch.cat(item, dim=0)
 
     def get_image_and_label(self, index):
         """
@@ -376,7 +380,7 @@ class BaseDataset(Dataset):
 
         Returns:
             (dict): Label dictionary with image and metadata.
-        """
+        """ 
         label = deepcopy(self.labels[index])  # requires deepcopy() https://github.com/ultralytics/ultralytics/pull/1948
         label.pop("shape", None)  # shape is for rect, remove it
         label["img"], label["ori_shape"], label["resized_shape"] = self.load_image(index)
@@ -390,7 +394,7 @@ class BaseDataset(Dataset):
 
     def __len__(self):
         """Return the length of the labels list for the dataset."""
-        return len(self.labels)
+        return len(self.n_images)
 
     def update_labels_info(self, label):
         """Custom your label format here."""
