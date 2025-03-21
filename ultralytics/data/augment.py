@@ -540,6 +540,7 @@ class Mosaic(BaseMixTransform):
         super().__init__(dataset=dataset, p=p)
         self.imgsz = imgsz
         self.border = (-imgsz // 2, -imgsz // 2)  # width, height
+        self.mosaic_center = None
         self.n = n
 
     def get_indexes(self, buffer=True):
@@ -681,7 +682,10 @@ class Mosaic(BaseMixTransform):
         """
         mosaic_labels = []
         s = self.imgsz
-        yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.border)  # mosaic center x, y
+        if self.mosaic_center is None:
+            yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.border)  # mosaic center x, y
+        else: 
+            yc, xc = self.mosaic_center
         for i in range(4):
             labels_patch = labels if i == 0 else labels["mix_labels"][i - 1]
             # Load image

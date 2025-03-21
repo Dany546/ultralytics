@@ -368,7 +368,9 @@ class BaseDataset(Dataset):
 
     def __getitem__(self, index):
         """Return transformed label information for given index.""" 
-        item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]] 
+        s = self.imgsz
+        self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))
+        item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]]  
         return torch.cat(item, dim=0)
 
     def get_image_and_label(self, index):
