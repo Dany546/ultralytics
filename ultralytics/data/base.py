@@ -167,9 +167,9 @@ class BaseDataset(Dataset):
                 else:
                     raise FileNotFoundError(f"{self.prefix}{p} does not exist")
             im_files = sorted(x.replace("/", os.sep) for x in f if x.split(".")[-1].lower() in IMG_FORMATS)
-            self.image_ids = [im.split(os.sep)[-1].split("_")[1] for im in im_files]
-            self.n_images = len(list(set(self.image_ids)))
-            self.image_ids = [[imf for imf, f in enumerate(im_files) if f.split(os.sep)[-1].split("_")[0]==name] for name in self.image_ids]
+            self.image_ids = list(set([im.split(os.sep)[-1].split("_")[1] for im in im_files]))
+            self.n_images = len(self.image_ids)
+            self.image_ids = [[imf for imf, f in enumerate(im_files) if f.split(os.sep)[-1].split("_")[1]==name] for name in self.image_ids]
             # self.img_files = sorted([x for x in f if x.suffix[1:].lower() in IMG_FORMATS])  # pathlib
             assert im_files, f"{self.prefix}No images found in {img_path}. {FORMATS_HELP_MSG}"
         except Exception as e:
@@ -373,7 +373,7 @@ class BaseDataset(Dataset):
         self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))
         item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]]  
         return torch.cat(item, dim=0)
-
+        
     def get_image_and_label(self, index):
         """
         Get and return label information from the dataset.
