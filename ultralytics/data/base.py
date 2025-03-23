@@ -244,7 +244,7 @@ class BaseDataset(Dataset):
                     im = cv2.resize(im, (w, h), interpolation=cv2.INTER_LINEAR)
             elif not (h0 == w0 == self.imgsz):  # resize by stretching image to square imgsz
                 im = cv2.resize(im, (self.imgsz, self.imgsz), interpolation=cv2.INTER_LINEAR)
-            im = np.array(im)
+            
             # Add to buffer if training with augmentations
             if self.augment:
                 self.ims[i], self.im_hw0[i], self.im_hw[i] = im, (h0, w0), im.shape[:2]  # im, hw_original, hw_resized
@@ -375,8 +375,8 @@ class BaseDataset(Dataset):
         """Return transformed label information for given index.""" 
         s = self.imgsz
         self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))  
-        print(type(self.get_image_and_label(self.image_ids[index][0])["img"]))
-        print(self.get_image_and_label(self.image_ids[index][0])["img"].shape)
+        # print(type(self.get_image_and_label(self.image_ids[index][0])["img"]))
+        # print(self.get_image_and_label(self.image_ids[index][0])["img"].shape)
         item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]]  
         return torch.cat(item, dim=0)
         
