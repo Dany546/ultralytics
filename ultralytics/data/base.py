@@ -124,7 +124,7 @@ class BaseDataset(Dataset):
         # Cache images (options are cache = True, False, None, "ram", "disk")
         self.ims, self.im_hw0, self.im_hw = [None] * self.ni, [None] * self.ni, [None] * self.ni
         self.npy_files = [Path(f).with_suffix(".npy") for f in self.im_files]
-        self.cache = "ram" #cache.lower() if isinstance(cache, str) else "ram" if cache is True else None
+        self.cache = cache.lower() if isinstance(cache, str) else "ram" if cache is True else None
         if self.cache == "ram" and self.check_cache_ram():
             if hyp.deterministic:
                 LOGGER.warning(
@@ -371,6 +371,7 @@ class BaseDataset(Dataset):
         """Return transformed label information for given index.""" 
         s = self.imgsz
         self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))  
+        print(self.get_image_and_label(ind)["img"])
         item = [self.transforms(self.get_image_and_label(ind)) for ind in self.image_ids[index]]  
         return torch.cat(item, dim=0)
         
