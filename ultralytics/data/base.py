@@ -102,6 +102,7 @@ class BaseDataset(Dataset):
         self.img_path = img_path
         self.imgsz = imgsz
         self.augment = augment
+        self.hyp = hyp
         self.single_cls = single_cls
         self.prefix = prefix
         self.fraction = fraction
