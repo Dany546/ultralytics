@@ -149,7 +149,10 @@ class DistLoss(v8DetectionLoss):
        
         # Bbox loss 
         if fg_mask.sum():
-            target_bboxes /= stride_tensor
+            target_bboxes /= stride_tensor 
+            loss[0], _ = self.bbox_loss(
+                pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask
+            )
             weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
             p, l = pred_bboxes[fg_mask], target_bboxes[fg_mask]
             w, h = (l[2] - l[0], l[3] - l[1])
@@ -159,7 +162,7 @@ class DistLoss(v8DetectionLoss):
             dy = (p[1]-l[1])*self.tol/h
             loss_value = dx**2 + dy**2 + 1e-6
             loss_value = weight * loss_value  
-            loss[0], loss[2] = loss_value.sum(), 0
+            loss[2] = loss_value.sum() 
         """ 
         if loss_value<1:
             loss_value = loss_value/2
@@ -170,7 +173,7 @@ class DistLoss(v8DetectionLoss):
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
         loss[2] *= self.hyp.dfl  # dfl gain
-        return loss.sum() * batch_size, loss_value.detach() 
+        return loss.sum() * batch_size, loss.detach() 
 
 class BaseModel(torch.nn.Module):
     """The BaseModel class serves as a base class for all the models in the Ultralytics YOLO family."""
