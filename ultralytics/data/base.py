@@ -374,14 +374,15 @@ class BaseDataset(Dataset):
     def __getitem__(self, index):
         """Return transformed label information for given index.""" 
         s = self.imgsz
-        self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
+        if self.augment:
+            self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
         items = []  
         for ind in self.image_ids[index]:
             item = self.transforms(self.get_image_and_label(ind))
             item["img"] = item["img"].unsqueeze(0)
             items.append(item) 
         if not self.augment:
-            print(self.transforms[0].new_shape, [i["img"].shape for i in items])
+            print(self.transforms[0][0].new_shape, [i["img"].shape for i in items])
         item = self.collate_fn(items)  
         return item
         
