@@ -382,7 +382,7 @@ class BaseDataset(Dataset):
             item["img"] = item["img"].unsqueeze(0)
             items.append(item) 
         if not self.augment:
-            print(self.transforms[0][0].new_shape, [i["img"].shape for i in items])
+            print(self.transforms[0][0][0].new_shape, [i["img"].shape for i in items])
         item = self.collate_fn(items)  
         return item
         
