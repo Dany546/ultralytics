@@ -380,7 +380,9 @@ class BaseDataset(Dataset):
             item = self.transforms(self.get_image_and_label(ind))
             item["img"] = item["img"].unsqueeze(0)
             items.append(item) 
-        return self.collate_fn(items)
+        item = self.collate_fn(items) 
+        print(item["img"].shape)
+        return item
         
     def get_image_and_label(self, index):
         """
