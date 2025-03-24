@@ -378,7 +378,8 @@ class BaseDataset(Dataset):
         items = []  
         for ind in self.image_ids[index]:
             item = self.transforms(self.get_image_and_label(ind))
-            items.append(item["img"].unsqueeze(0)) 
+            item["img"] = item["img"].unsqueeze(0)
+            items.append(item) 
         return self.collate_fn(items)
         
     def get_image_and_label(self, index):
