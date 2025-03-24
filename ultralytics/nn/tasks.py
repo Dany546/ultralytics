@@ -91,6 +91,72 @@ try:
 except ImportError:
     thop = None  # conda support without 'ultralytics-thop' installed
 
+class DistLoss: 
+    def __init__(self, tol=24, imgsz=640):
+        self.tol = (tol/imgsz)**2
+    
+    def __call__(self, preds, batch):
+        
+        loss = torch.zeros(3, device=self.device)  # box, cls, dfl
+        feats = preds[1] if isinstance(preds, tuple) else preds
+        pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
+            (self.reg_max * 4, self.nc), 1
+        )
+
+        pred_scores = pred_scores.permute(0, 2, 1).contiguous()
+        pred_distri = pred_distri.permute(0, 2, 1).contiguous()
+
+        dtype = pred_scores.dtype
+        batch_size = pred_scores.shape[0]
+        imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]  # image size (h,w)
+        anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
+
+        # Targets
+        targets = torch.cat((batch["batch_idx"].view(-1, 1), batch["cls"].view(-1, 1), batch["bboxes"]), 1)
+        targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
+        gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0.0)
+
+        # Pboxes
+        pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, h*w, 4) 
+
+        _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
+            # pred_scores.detach().sigmoid() * 0.8 + dfl_conf.unsqueeze(-1) * 0.2,
+            pred_scores.detach().sigmoid(),
+            (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
+            anchor_points * stride_tensor,
+            gt_labels,
+            gt_bboxes,
+            mask_gt,
+        )
+
+        target_scores_sum = max(target_scores.sum(), 1)
+
+        # Cls loss
+        # loss[1] = self.varifocal_loss(pred_scores, target_scores, target_labels) / target_scores_sum  # VFL way
+        loss[1] = self.bce(pred_scores, target_scores.to(dtype)).sum() / target_scores_sum  # BCE
+       
+        # Bbox loss 
+        if fg_mask.sum():
+            target_bboxes /= stride_tensor
+            weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
+            p, l = pred_bboxes[fg_mask], target_bboxes[fg_mask]
+            p = (p[0] + p[2], p[1] + p[3])
+            l = (l[0] + l[2], l[1] + l[3]) 
+            loss_value = (p[0]-l[0])**2 + (p[0]-l[0])**2 + 1e-6
+            loss_value = weight * loss_value / self.tol
+            loss[0], loss[2] = loss_value.sum(), 0
+        """ 
+        if loss_value<1:
+            loss_value = loss_value/2
+        else: 
+            loss_value = torch.sqrt(loss_value -0.5)
+        """
+        
+        loss[0] *= self.hyp.box  # box gain
+        loss[1] *= self.hyp.cls  # cls gain
+        loss[2] *= self.hyp.dfl  # dfl gain
+        return loss_value, loss_value.detach() 
 
 class BaseModel(torch.nn.Module):
     """The BaseModel class serves as a base class for all the models in the Ultralytics YOLO family."""
@@ -144,12 +210,14 @@ class BaseModel(torch.nn.Module):
         Returns:
             (torch.Tensor): The last output of the model.
         """
+        _layer = 0
         y, dt, embeddings = [], [], []  # outputs
-        for m in self.model:
+        for m in self.model: 
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
+            
             x = m(x)  # run
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
@@ -285,7 +353,7 @@ class BaseModel(torch.nn.Module):
             preds (torch.Tensor | List[torch.Tensor], optional): Predictions.
         """
         if getattr(self, "criterion", None) is None:
-            self.criterion = self.init_criterion()
+            self.criterion = DistLoss(imgsz=batch["img"].shape[-1]) # self.init_criterion()
 
         preds = self.forward(batch["img"]) if preds is None else preds
         return self.criterion(preds, batch)

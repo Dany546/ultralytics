@@ -198,6 +198,7 @@ class Compose:
             >>> transformed_data = compose(input_data)
         """
         for t in self.transforms:
+            print(type(data))
             data = t(data)
         return data
 
