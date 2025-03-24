@@ -197,8 +197,7 @@ class Compose:
             >>> compose = Compose(transforms)
             >>> transformed_data = compose(input_data)
         """
-        for t in self.transforms:
-            print(type(data))
+        for t in self.transforms: 
             data = t(data)
         return data
 
@@ -1236,8 +1235,7 @@ class RandomPerspective:
         border = labels.pop("mosaic_border", self.border)
         self.size = img.shape[1] + border[1] * 2, img.shape[0] + border[0] * 2  # w, h
         # M is affine matrix
-        # Scale for func:`box_candidates`
-        print(img.shape)
+        # Scale for func:`box_candidates
         img, M, scale = self.affine_transform(img.astype("uint8"), border)
 
         bboxes = self.apply_bboxes(instances.bboxes, M)
