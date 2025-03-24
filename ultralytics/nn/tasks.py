@@ -154,17 +154,15 @@ class DistLoss(v8DetectionLoss):
                 pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask
             )
             weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
-            p, l = pred_bboxes[fg_mask], target_bboxes[fg_mask]
-            print(p.shape, l.shape)
+            p, l = pred_bboxes[fg_mask], target_bboxes[fg_mask] 
             w, h = (l[:,2] - l[:,0], l[:,3] - l[:,1])
             p = (p[:,0] + p[:,2], p[:,1] + p[:,3])
             l = (l[:,0] + l[:,2], l[:,1] + l[:,3]) 
-            dx = (p[:,0]-l[:,0])*self.tol/w
-            dy = (p[:,1]-l[:,1])*self.tol/h
+            dx = (p[0]-l[0])*self.tol/w
+            dy = (p[1]-l[1])*self.tol/h
             loss_value = dx**2 + dy**2 + 1e-6
             loss_value = weight * loss_value  
-            loss[2] = loss_value.sum()
-            print(loss[2].detach(), w.detach(), h.detach())
+            loss[2] = loss_value.sum() 
         """ 
         if loss_value<1:
             loss_value = loss_value/2
