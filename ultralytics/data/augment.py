@@ -1079,7 +1079,7 @@ class RandomPerspective:
             if self.perspective:
                 img = cv2.warpPerspective(img, M, dsize=self.size, borderValue=(114, 114, 114))
             else:  # affine
-                print(type(image))
+                print(type(img))
                 img = cv2.warpAffine(img, M[:2], dsize=self.size, borderValue=(114, 114, 114))
         return img, M, s
 
@@ -1240,7 +1240,7 @@ class RandomPerspective:
         # Scale for func:`box_candidates`
         print(type(img), type(border))
         print(border)
-        img, M, scale = self.affine_transform(img, border)
+        img, M, scale = self.affine_transform(np.array(img), border)
 
         bboxes = self.apply_bboxes(instances.bboxes, M)
 
