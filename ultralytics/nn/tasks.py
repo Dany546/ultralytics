@@ -91,10 +91,21 @@ try:
 except ImportError:
     thop = None  # conda support without 'ultralytics-thop' installed
 
-class DistLoss: 
-    def __init__(self, tol=24, imgsz=640):
-        self.tol = (tol/imgsz)**2
+from ultralytics.utils.tal import RotatedTaskAlignedAssigner, TaskAlignedAssigner, dist2bbox, dist2rbox, make_anchors
+class DistLoss(v8DetectionLoss): 
+    def __init__(self, model, tol=24, imgsz=640):
+        super().__init__(model)
+        self.tol = (tol/imgsz) 
     
+    def bbox_decode(self, anchor_points, pred_dist):
+        """Decode predicted object bounding box coordinates from anchor points and distribution."""
+        if self.use_dfl:
+            b, a, c = pred_dist.shape  # batch, anchors, channels
+            pred_dist = pred_dist.view(b, a, 4, c // 4).softmax(3).matmul(self.proj.type(pred_dist.dtype))
+            # pred_dist = pred_dist.view(b, a, c // 4, 4).transpose(2,3).softmax(3).matmul(self.proj.type(pred_dist.dtype))
+            # pred_dist = (pred_dist.view(b, a, c // 4, 4).softmax(2) * self.proj.type(pred_dist.dtype).view(1, 1, -1, 1)).sum(2)
+        return dist2bbox(pred_dist, anchor_points, xywh=False)
+
     def __call__(self, preds, batch):
         
         loss = torch.zeros(3, device=self.device)  # box, cls, dfl
@@ -141,10 +152,13 @@ class DistLoss:
             target_bboxes /= stride_tensor
             weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
             p, l = pred_bboxes[fg_mask], target_bboxes[fg_mask]
+            w, h = (l[2] - l[0], l[3] - l[1])
             p = (p[0] + p[2], p[1] + p[3])
             l = (l[0] + l[2], l[1] + l[3]) 
-            loss_value = (p[0]-l[0])**2 + (p[0]-l[0])**2 + 1e-6
-            loss_value = weight * loss_value / self.tol
+            dx = (p[0]-l[0])*self.tol/w
+            dy = (p[1]-l[1])*self.tol/h
+            loss_value = dx**2 + dy**2 + 1e-6
+            loss_value = weight * loss_value  
             loss[0], loss[2] = loss_value.sum(), 0
         """ 
         if loss_value<1:
@@ -353,7 +367,7 @@ class BaseModel(torch.nn.Module):
             preds (torch.Tensor | List[torch.Tensor], optional): Predictions.
         """
         if getattr(self, "criterion", None) is None:
-            self.criterion = DistLoss(imgsz=batch["img"].shape[-1]) # self.init_criterion()
+            self.criterion = DistLoss(self, imgsz=batch["img"].shape[-1]) # self.init_criterion()
 
         preds = self.forward(batch["img"]) if preds is None else preds
         return self.criterion(preds, batch)

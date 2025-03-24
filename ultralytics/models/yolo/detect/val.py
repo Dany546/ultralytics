@@ -304,11 +304,11 @@ class DetectionValidator(BaseValidator):
         """
         x1, y1, x2, y2 = detections[:,0], detections[:,1], detections[:,2], detections[:,3]
         x, y = (x1 + x2)/2, (y1 + y2)/2
-        tol = 24/320
-        detections[:, 0] = max(0, x - tol/2)
-        detections[:, 1] = max(0, y - tol/2)
-        detections[:, 2] = min(1.0, x + tol/2)
-        detections[:, 3] = min(1.0, y + tol/2)
+        w, h = gt_bboxes[2] - gt_bboxes[0], gt_bboxes[3] - gt_bboxes[1] 
+        detections[:, 0] = max(0, x - w/2)
+        detections[:, 1] = max(0, y - h/2)
+        detections[:, 2] = min(1.0, x + w/2)
+        detections[:, 3] = min(1.0, y + h/2)
         iou = box_iou(gt_bboxes, detections[:, :4])
         return self.match_predictions(detections[:, 5], gt_cls, iou)
 
