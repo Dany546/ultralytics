@@ -1238,7 +1238,7 @@ class RandomPerspective:
         # M is affine matrix
         # Scale for func:`box_candidates`
         print(img.shape)
-        img, M, scale = self.affine_transform(img, border)
+        img, M, scale = self.affine_transform(img.astype("uint8"), border)
 
         bboxes = self.apply_bboxes(instances.bboxes, M)
 
