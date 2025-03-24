@@ -162,7 +162,7 @@ class DistLoss(v8DetectionLoss):
             dy = (p[1]-l[1])*self.tol/h
             loss_value = dx**2 + dy**2 + 1e-6
             loss_value = weight * loss_value  
-            loss[2] = loss_value.sum() 
+            loss[2] = loss_value.sum()
         """ 
         if loss_value<1:
             loss_value = loss_value/2
@@ -172,7 +172,8 @@ class DistLoss(v8DetectionLoss):
         
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
-        loss[2] *= self.hyp.dfl  # dfl gain
+        loss[2] *= self.hyp.dfl  # dfl gain 
+        print(loss.detach())
         return loss.sum() * batch_size, loss.detach() 
 
 class BaseModel(torch.nn.Module):
