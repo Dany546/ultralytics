@@ -376,13 +376,28 @@ class BaseDataset(Dataset):
         s = self.imgsz
         if self.augment:
             self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
-        items = []  
+        items = []  ; shapes = [] 
         for ind in self.image_ids[index]:
             item = self.transforms(self.get_image_and_label(ind))
             item["img"] = item["img"].unsqueeze(0)
+            w, h = item["img"].shape[-2:] 
+            shapes.append([w,h])
             items.append(item) 
         if not self.augment:
-            print([i["img"].shape for i in items])
+            shapes = np.array(shapes)
+            x = len(np.unique(shapes[:,0])[0])>1
+            y = len(np.unique(shapes[:,1])[0])>1
+            if x and y:
+                for item in items:
+                    item["img"] = item["img"][..., :min(shapes[:,0]), :min(shapes[:,1])]
+            elif x:
+                for item in items:
+                    item["img"] = item["img"][..., :min(shapes[:,0]), :]
+            elif y:
+                for item in items:
+                    item["img"] = item["img"][..., :min(shapes[:,1])]
+            else:
+                pass 
         item = self.collate_fn(items)  
         return item
         
