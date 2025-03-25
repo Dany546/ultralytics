@@ -216,7 +216,7 @@ class YOLODataset(BaseDataset):
             hyp.mixup = hyp.mixup if self.augment and not self.rect else 0.0
             transforms = v8_transforms(self, self.imgsz, hyp)
         else:
-            transforms = Compose([LetterBox(new_shape=(self.imgsz, self.imgsz), scaleup=False, center=False)])
+            transforms = Compose([LetterBox(new_shape=(self.imgsz, self.imgsz), scaleup=False)])
         transforms.append(
             Format(
                 bbox_format="xywh",
@@ -300,6 +300,8 @@ class YOLODataset(BaseDataset):
             if k in ("im_file") and isinstance(value[0], (list, tuple)):
                 value = tuple(np.concatenate(value))
             new_batch[k] = value
+            if k != "img": 
+                print(k, value)
         new_batch["batch_idx"] = list(new_batch["batch_idx"])
         for i in range(len(new_batch["batch_idx"])):
             new_batch["batch_idx"][i] += i  # add target image index for build_targets()
