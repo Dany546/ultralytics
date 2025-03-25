@@ -1531,7 +1531,8 @@ class LetterBox:
             >>> letterbox = LetterBox(new_shape=(640, 640), auto=False, scale_fill=False, scaleup=True, stride=32)
             >>> resized_img = letterbox(original_img)
         """
-        self.new_shape = new_shape
+        print(new_shape)
+        self.new_shape = (320, 320) # new_shape
         self.auto = auto
         self.scale_fill = scale_fill
         self.scaleup = scaleup
@@ -1577,7 +1578,7 @@ class LetterBox:
         ratio = r, r  # width, height ratios
         new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
         dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
-        # print(shape, dw, dh)
+        print(shape, dh, dw)
         if self.auto:  # minimum rectangle
             dw, dh = np.mod(dw, self.stride), np.mod(dh, self.stride)  # wh padding
         elif self.scale_fill:  # stretch
