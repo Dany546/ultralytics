@@ -385,8 +385,8 @@ class BaseDataset(Dataset):
             items.append(item) 
         if not self.augment:
             shapes = np.array(shapes)
-            x = len(np.unique(shapes[:,0])[0])>1
-            y = len(np.unique(shapes[:,1])[0])>1
+            x = len(np.unique(shapes[:,0]))>1
+            y = len(np.unique(shapes[:,1]))>1
             if x and y:
                 for item in items:
                     item["img"] = item["img"][..., :min(shapes[:,0]), :min(shapes[:,1])]
