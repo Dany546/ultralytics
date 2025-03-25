@@ -117,7 +117,8 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None, padding=True, xyw
         gain = ratio_pad[0][0]
         pad = ratio_pad[1]
 
-    print("padding", pad)
+    if isinstance(pad[0], list):
+        pad = torch.from_array(np.array(pad))
     if padding:
         boxes[..., 0] -= pad[0]  # x padding
         boxes[..., 1] -= pad[1]  # y padding
