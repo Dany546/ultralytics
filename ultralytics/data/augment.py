@@ -1577,6 +1577,7 @@ class LetterBox:
         ratio = r, r  # width, height ratios
         new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
         dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
+        print(shape, dw, dh)
         if self.auto:  # minimum rectangle
             dw, dh = np.mod(dw, self.stride), np.mod(dh, self.stride)  # wh padding
         elif self.scale_fill:  # stretch
@@ -1590,11 +1591,13 @@ class LetterBox:
 
         if shape[::-1] != new_unpad:  # resize
             img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
+            print("resizes", shape[::-1], new_unpad)
         top, bottom = int(round(dh - 0.1)) if self.center else 0, int(round(dh + 0.1))
         left, right = int(round(dw - 0.1)) if self.center else 0, int(round(dw + 0.1))
         img = cv2.copyMakeBorder(
             img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(114, 114, 114)
         )  # add border
+        print(img.shape[:2])
         if labels.get("ratio_pad"):
             labels["ratio_pad"] = (labels["ratio_pad"], (left, top))  # for evaluation
  
