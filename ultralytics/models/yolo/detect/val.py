@@ -298,7 +298,7 @@ class DetectionValidator(BaseValidator):
         Args:
             detections (torch.Tensor): Tensor of shape (N, 6) representing detections where each detection is
                 (x1, y1, x2, y2, conf, class).
-            gt_bboxes (torch.Tensor): Tensor of shape (4, M) representing ground-truth bounding box coordinates. Each
+            gt_bboxes (torch.Tensor): Tensor of shape (M, 4) representing ground-truth bounding box coordinates. Each
                 bounding box is of the format: (x1, y1, x2, y2).
             gt_cls (torch.Tensor): Tensor of shape (M,) representing target class indices.
 
@@ -307,7 +307,7 @@ class DetectionValidator(BaseValidator):
         """ 
         x1, y1, x2, y2 = detections[:,0], detections[:,1], detections[:,2], detections[:,3]
         x, y = (x1 + x2)/2, (y1 + y2)/2 
-        w, h = gt_bboxes[2] - gt_bboxes[0], gt_bboxes[3] - gt_bboxes[1]  
+        w, h = gt_bboxes[:,2] - gt_bboxes[:,0], gt_bboxes[:,3] - gt_bboxes[:,1]  
         detections[:, 0] = torch.clamp(x - w/2, 0)
         detections[:, 1] = torch.clamp(y - h/2, 0)
         detections[:, 2] = torch.clamp(x + w/2, None, 1.0)
