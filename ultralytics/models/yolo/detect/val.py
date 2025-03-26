@@ -303,9 +303,8 @@ class DetectionValidator(BaseValidator):
             (torch.Tensor): Correct prediction matrix of shape (N, 10) for 10 IoU levels.
         """
         x1, y1, x2, y2 = detections[:,0], detections[:,1], detections[:,2], detections[:,3]
-        x, y = (x1 + x2)/2, (y1 + y2)/2
-        print(gt_bboxes)
-        w, h = gt_bboxes[2] - gt_bboxes[0], gt_bboxes[3] - gt_bboxes[1]  
+        x, y = (x1 + x2)/2, (y1 + y2)/2 
+        w, h = gt_bboxes[:,2] - gt_bboxes[:,0], gt_bboxes[:,3] - gt_bboxes[:,1]  
         detections[:, 0] = max(0, x - w/2)
         detections[:, 1] = max(0, y - h/2)
         detections[:, 2] = min(1.0, x + w/2)
