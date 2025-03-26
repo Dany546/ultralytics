@@ -297,9 +297,9 @@ class YOLODataset(BaseDataset):
                 value = torch.cat(value, 0)
             if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
                 value = torch.cat(value, 0)
-            if k in ("im_file") and not first:
+            if k in ("ori_shape","im_file") and not first:
                 value = tuple(np.concatenate(value)) 
-            if k in ("ori_shape","ratio_pad") and not first: 
+            if k in ("ratio_pad") and not first: 
                 print((len(value),len(value[0])), tuple(np.concatenate(value)))
                 # value = torch.cat(value, 0)   
              
