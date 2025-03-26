@@ -108,7 +108,7 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None, padding=True, xyw
         (torch.Tensor): The scaled bounding boxes, in the format of (x1, y1, x2, y2).
     """
     print(img1_shape, boxes.shape, img0_shape, ratio_pad)
-    if not isinstance(img0_shape, list):
+    if isinstance(img0_shape, int):
         img0_shape = [img0_shape, img0_shape]
     if ratio_pad is None or True:  # calculate from img0_shape
         gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
