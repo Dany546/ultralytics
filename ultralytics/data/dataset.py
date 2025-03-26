@@ -278,7 +278,7 @@ class YOLODataset(BaseDataset):
         return label
 
     @staticmethod
-    def collate_fn(batch):
+    def collate_fn(batch, first=False):
         """
         Collates data samples into batches.
 
@@ -297,12 +297,12 @@ class YOLODataset(BaseDataset):
                 value = torch.cat(value, 0)
             if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
                 value = torch.cat(value, 0)
-            if k in ("im_file") and isinstance(value[0], (list, tuple)):
-                value = tuple(np.concatenate(value))
-             
-            if k in ("ori_shape","ratio_pad") and isinstance(value[0], (list, tuple)):
-                value = value[0] 
-                # print(value, tuple(np.concatenate(value)))
+            if k in ("im_file") and not first:
+                value = tuple(np.concatenate(value)) 
+            if k in ("ori_shape","ratio_pad") and not first:
+                print(value.shape, torch.cat(value, 0))
+                print(tuple(np.concatenate(value)) , torch.cat(value, 0))
+                value = torch.cat(value, 0)   
              
             new_batch[k] = value 
         new_batch["batch_idx"] = list(new_batch["batch_idx"])
