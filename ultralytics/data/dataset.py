@@ -299,10 +299,9 @@ class YOLODataset(BaseDataset):
                 value = torch.cat(value, 0)
             if k in ("im_file") and not first:
                 value = tuple(np.concatenate(value)) 
-            if False: # k in ("ori_shape","ratio_pad") and not first:
-                print((len(value),len(value[0])), torch.cat(value, 0))
-                print(tuple(np.concatenate(value)) , torch.cat(value, 0))
-                value = torch.cat(value, 0)   
+            if k in ("ori_shape","ratio_pad") and not first: 
+                print((len(value),len(value[0])), tuple(np.concatenate(value)))
+                # value = torch.cat(value, 0)   
              
             new_batch[k] = value 
         new_batch["batch_idx"] = list(new_batch["batch_idx"])
