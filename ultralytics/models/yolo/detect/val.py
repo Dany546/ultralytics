@@ -305,10 +305,10 @@ class DetectionValidator(BaseValidator):
         x1, y1, x2, y2 = detections[:,0], detections[:,1], detections[:,2], detections[:,3]
         x, y = (x1 + x2)/2, (y1 + y2)/2 
         w, h = gt_bboxes[:,2] - gt_bboxes[:,0], gt_bboxes[:,3] - gt_bboxes[:,1]  
-        detections[:, 0] = max(0, x - w/2)
-        detections[:, 1] = max(0, y - h/2)
-        detections[:, 2] = min(1.0, x + w/2)
-        detections[:, 3] = min(1.0, y + h/2)
+        detections[:, 0] = torch.clamp(x - w/2, 0)
+        detections[:, 1] = torch.clamp(y - h/2, 0)
+        detections[:, 2] = torch.clamp(x + w/2, None, 1.0)
+        detections[:, 3] = torch.clamp(y + h/2, None, 1.0)
         iou = box_iou(gt_bboxes, detections[:, :4])
         return self.match_predictions(detections[:, 5], gt_cls, iou)
 
