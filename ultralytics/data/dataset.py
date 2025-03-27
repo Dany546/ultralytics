@@ -302,7 +302,7 @@ class YOLODataset(BaseDataset):
             new_batch[k] = value 
         new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
         if not first:
-            new_batch["batch_idx"] = list(new_batch["batch_idx"])
+            # new_batch["batch_idx"] = list(new_batch["batch_idx"])
             for i in range(len(new_batch["batch_idx"])):
                 new_batch["batch_idx"][i] += i  # add target image index for build_targets()
         return new_batch
