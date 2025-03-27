@@ -398,7 +398,8 @@ class BaseDataset(Dataset):
                     item["img"] = item["img"][..., :min(shapes[:,1])]
             else:
                 pass 
-        item = self.collate_fn(items, first=True)   
+        item = self.collate_fn(items, first=True)  
+        print(item["bboxes"])
         return item
         
     def get_image_and_label(self, index):
