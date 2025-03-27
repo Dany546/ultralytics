@@ -297,6 +297,8 @@ class YOLODataset(BaseDataset):
                 value = torch.cat(value, 0)
             if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
                 value = torch.cat(value, 0) 
+                if k in {"bboxes"} and first:
+                    value[:,2:4] = 10*value[:,2:4]
             if k in ("ori_shape", "im_file", "ratio_pad") and not first:
                 value = tuple(np.concatenate(value)) 
             new_batch[k] = value 

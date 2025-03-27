@@ -352,8 +352,7 @@ class DetectionValidator(BaseValidator):
         Args:
             batch (dict): Batch containing images and annotations.
             ni (int): Batch index.
-        """
-        print(batch["batch_idx"], batch["img"].shape, batch["bboxes"].shape, batch["bboxes"])
+        """ 
         plot_images(
             batch["img"],
             batch["batch_idx"],
