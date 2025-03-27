@@ -181,8 +181,7 @@ class DetectionValidator(BaseValidator):
         Returns:
             (torch.Tensor): Prepared predictions in native space.
         """
-        predn = pred.clone()
-        print(predn.shape)
+        predn = pred.clone() 
         ops.scale_boxes(
             pbatch["imgsz"], predn[:, :4], pbatch["ori_shape"], ratio_pad=pbatch["ratio_pad"]
         )  # native-space pred
@@ -306,12 +305,15 @@ class DetectionValidator(BaseValidator):
             (torch.Tensor): Correct prediction matrix of shape (N, 10) for 10 IoU levels.
         """ 
         x1, y1, x2, y2 = detections[:,0], detections[:,1], detections[:,2], detections[:,3]
+        """ 
         x, y = (x1 + x2)/2, (y1 + y2)/2 
-        w, h = gt_bboxes[:,2] - gt_bboxes[:,0], gt_bboxes[:,3] - gt_bboxes[:,1]  
+        w, h = gt_bboxes[0,2] - gt_bboxes[0,0], gt_bboxes[0,3] - gt_bboxes[0,1]
+        w = w.unsqueeze(0)   ;   h = h.unsqueeze(0)  
         detections[:, 0] = torch.clamp(x - w/2, 0)
         detections[:, 1] = torch.clamp(y - h/2, 0)
         detections[:, 2] = torch.clamp(x + w/2, None, 1.0)
         detections[:, 3] = torch.clamp(y + h/2, None, 1.0)
+        """
         iou = box_iou(gt_bboxes, detections[:, :4])
         return self.match_predictions(detections[:, 5], gt_cls, iou)
 
