@@ -300,9 +300,10 @@ class YOLODataset(BaseDataset):
             if k in ("ori_shape", "im_file", "ratio_pad") and not first:
                 value = tuple(np.concatenate(value)) 
             new_batch[k] = value 
-        new_batch["batch_idx"] = list(new_batch["batch_idx"])
-        for i in range(len(new_batch["batch_idx"])):
-            new_batch["batch_idx"][i] += i  # add target image index for build_targets()
+        if not first:
+            new_batch["batch_idx"] = list(new_batch["batch_idx"])
+            for i in range(len(new_batch["batch_idx"])):
+                new_batch["batch_idx"][i] += i  # add target image index for build_targets()
         new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
         return new_batch
 
