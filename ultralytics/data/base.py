@@ -380,6 +380,7 @@ class BaseDataset(Dataset):
         for ind in self.image_ids[index]:
             item = self.transforms(self.get_image_and_label(ind))
             item["img"] = item["img"].unsqueeze(0) 
+            item["bboxes"][:,2:4] = 5*item["bboxes"][:,2:4]
             items.append(item)  
         item = self.collate_fn(items, first=True)   
         return item
