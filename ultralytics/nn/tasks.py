@@ -150,7 +150,7 @@ class DistLoss(v8DetectionLoss):
         # Bbox loss 
         if fg_mask.sum():
             target_bboxes /= stride_tensor 
-            loss[0], _ = self.bbox_loss(
+            loss[0], dl = self.bbox_loss(
                 pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask
             )
             weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
@@ -161,8 +161,9 @@ class DistLoss(v8DetectionLoss):
             dx = (p[0]-l[0])/w
             dy = (p[1]-l[1])/h
             loss_value = dx**2 + dy**2 + 1e-6
-            loss_value = weight * loss_value  
+            loss_value = weight * loss_value  /4 
             loss[2] = loss_value.sum() / target_scores_sum
+            loss[0] = loss[0] + dl/5
         """ 
         if loss_value<1:
             loss_value = loss_value/2
