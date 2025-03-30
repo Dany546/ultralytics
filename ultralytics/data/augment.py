@@ -1532,7 +1532,7 @@ class LetterBox:
             >>> resized_img = letterbox(original_img)
         """
         # print("new_shape", new_shape)
-        self.new_shape = (320, 320) # new_shape
+        self.new_shape = new_shape # (320, 320) # new_shape
         self.auto = auto
         self.scale_fill = scale_fill
         self.scaleup = scaleup
