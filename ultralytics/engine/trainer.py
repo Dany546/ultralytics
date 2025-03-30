@@ -253,7 +253,6 @@ class BaseTrainer:
             # v.register_hook(lambda x: torch.nan_to_num(x))  # NaN to 0 (commented for erratic training results)
             if any(x in k for x in freeze_layer_names): 
                 if len(v.data.shape)==5 or "bn" in k: # doesn't freeze 3d conv nor BN
-                    print(k)
                     v.requires_grad = True
                 else:
                     # LOGGER.info(f"Freezing layer '{k}'")
