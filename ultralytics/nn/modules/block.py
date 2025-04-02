@@ -1076,7 +1076,7 @@ class C3k2(C2f):
         """
         super().__init__(c1, c2, n, shortcut, g, e)
         self.m = nn.ModuleList(
-            C3k((2 + n) * self.c, self.c, 2, shortcut, g) if c3k else Bottleneck((2 + n) * self.c, self.c, shortcut, g) for _ in range(n)
+            C3k((2 + _) * self.c, self.c, 2, shortcut, g) if c3k else Bottleneck((2 + _) * self.c, self.c, shortcut, g) for _ in range(n)
         ) 
     
     def forward(self, x):
