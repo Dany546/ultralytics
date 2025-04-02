@@ -378,9 +378,10 @@ class BaseDataset(Dataset):
             self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
         items = []  # ; shapes = [] 
         for ind in self.image_ids[index]:
-            item = self.transforms(self.get_image_and_label(ind))
-            item["img"] = item["img"].unsqueeze(0) 
+            item = self.get_image_and_label(ind)
             item["bboxes"][:,2:4] = 5*item["bboxes"][:,2:4]
+            item = self.transforms(item)
+            item["img"] = item["img"].unsqueeze(0) 
             items.append(item)  
         item = self.collate_fn(items, first=True)   
         return item

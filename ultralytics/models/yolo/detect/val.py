@@ -185,8 +185,8 @@ class DetectionValidator(BaseValidator):
         ops.scale_boxes(
             pbatch["imgsz"], predn[:, :4], pbatch["ori_shape"], ratio_pad=pbatch["ratio_pad"]
         )  # native-space pred
-        predn = predn[:,:6]
-        predn[:, 5] = 0
+        # predn = predn[:,:6]
+        # predn[:, 5] = 0
         return predn
 
     def update_metrics(self, preds, batch):
