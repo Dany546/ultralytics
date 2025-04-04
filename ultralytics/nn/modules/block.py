@@ -1080,7 +1080,7 @@ class C3k2(C2f):
         ) 
     """
     def forward(self, x):
-        """Forward pass through C2f layer."""
+        # Forward pass through C2f layer. 
         y = list(self.cv1(x).chunk(2, 1))
         y.extend(m(torch.cat(y,1)) for m in self.m)
         return self.cv2(torch.cat(y, 1))
