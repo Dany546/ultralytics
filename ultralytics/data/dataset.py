@@ -126,6 +126,7 @@ class YOLODataset(BaseDataset):
                 ne += ne_f
                 nc += nc_f
                 if im_file:
+                    lb[:, 2:4] = 10*lb[:, 2:4]
                     x["labels"].append(
                         {
                             "im_file": im_file,
@@ -136,7 +137,7 @@ class YOLODataset(BaseDataset):
                             "keypoints": keypoint,
                             "normalized": True,
                             "bbox_format": "xywh",
-                        }
+                        } 
                     )
                 if msg:
                     msgs.append(msg)

@@ -379,8 +379,7 @@ class BaseDataset(Dataset):
         items = []  # ; shapes = [] 
         for ind in self.image_ids[index]:
             item = self.get_image_and_label(ind)
-            if "bboxes" in [*item.keys()]:
-                item["bboxes"][:,2:4] = 10*item["bboxes"][:,2:4]
+            
             item = self.transforms(item)
             item["img"] = item["img"].unsqueeze(0) 
             items.append(item)  
