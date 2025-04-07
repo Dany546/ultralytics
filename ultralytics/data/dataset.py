@@ -126,7 +126,7 @@ class YOLODataset(BaseDataset):
                 ne += ne_f
                 nc += nc_f
                 if im_file:
-                    lb[:, 3:5] = 10*lb[:, 3:5]
+                    lb[:, 3:5] = 4*lb[:, 3:5]
                     x["labels"].append(
                         {
                             "im_file": im_file,
