@@ -1075,16 +1075,16 @@ class C3k2(C2f):
             shortcut (bool): Whether to use shortcut connections.
         """
         super().__init__(c1, c2, n, shortcut, g, e)
-        self.m = nn.ModuleList( # (2 + _) * 
-            C3k(self.c, self.c, 2, shortcut, g) if c3k else Bottleneck(self.c, self.c, shortcut, g) for _ in range(n)
+        self.m = nn.ModuleList( #  
+            C3k((2 + _) *self.c, self.c, 2, shortcut, g) if c3k else Bottleneck((2 + _) *self.c, self.c, shortcut, g) for _ in range(n)
         ) 
-    """
+    
     def forward(self, x):
         # Forward pass through C2f layer. 
         y = list(self.cv1(x).chunk(2, 1))
         y.extend(m(torch.cat(y,1)) for m in self.m)
         return self.cv2(torch.cat(y, 1))
-    """
+    
 
 class C3k(C3):
     """C3k is a CSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
