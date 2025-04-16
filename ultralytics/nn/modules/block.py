@@ -1089,7 +1089,8 @@ class C3k2(C2f):
             o = m(torch.cat(y,1)) 
             s = o.shape[-3:]
             o = o.view(-1, s[0], s[1], s[2])
-            y.extend(o)
+            y = y.extend(o)
+            print([yy.shape for yy in y])
         return self.cv2(torch.cat(y, 1))
     
 
