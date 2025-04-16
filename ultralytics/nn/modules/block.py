@@ -1084,13 +1084,10 @@ class C3k2(C2f):
         # Forward pass through C3k2 layer.
         y = list(self.cv1(x).chunk(2, 1))  
         for m in self.m: 
-            print(m)
-            print([yy.shape for yy in y])
             o = m(torch.cat(y,1)) 
             s = o.shape[-3:]
             o = o.view(-1, s[0], s[1], s[2]) 
-            y += [o] # y.extend(o)
-            print([yy.shape for yy in y])
+            y += [o] # y.extend(o) 
         return self.cv2(torch.cat(y, 1))
     
 

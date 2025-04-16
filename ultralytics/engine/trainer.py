@@ -236,7 +236,7 @@ class BaseTrainer:
         # Model
         self.run_callbacks("on_pretrain_routine_start")
         ckpt = self.setup_model()
-        # self.model = self.model.to(self.device)
+        self.model = self.model.to(self.device)
         self.set_model_attributes()
 
         # Freeze layers
@@ -595,8 +595,7 @@ class BaseTrainer:
 
         Returns:
             (dict): Optional checkpoint to resume training from.
-        """
-        print(isinstance(self.model, torch.nn.Module)) 
+        """ 
         if isinstance(self.model, torch.nn.Module):  # if model is loaded beforehand. No setup needed
            return
 
