@@ -235,7 +235,7 @@ class BaseTrainer:
         """Build dataloaders and optimizer on correct rank process."""
         # Model
         self.run_callbacks("on_pretrain_routine_start")
-        ckpt = self.setup_model()
+        # ckpt = self.setup_model()
         self.model = self.model.to(self.device)
         self.set_model_attributes()
 
@@ -320,7 +320,7 @@ class BaseTrainer:
         # Scheduler
         self._setup_scheduler()
         self.stopper, self.stop = EarlyStopping(patience=self.args.patience), False
-        self.resume_training(ckpt)
+        # self.resume_training(ckpt)
         self.scheduler.last_epoch = self.start_epoch - 1  # do not move
         self.run_callbacks("on_pretrain_routine_end")
 
