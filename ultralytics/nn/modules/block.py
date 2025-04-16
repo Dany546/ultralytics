@@ -1076,7 +1076,7 @@ class C3k2(C2f):
         """
         super().__init__(c1, c2, n, shortcut, g, e)
         self.m = nn.ModuleList(   
-            nn.Sequential(nn.Conv2d((2 + _)*self.c, self.c, 1),
+            nn.Sequential(nn.Conv2d((2 + _)*self.c, self.c, 1, bias=False),
             C3k(self.c, self.c, 2, shortcut, g) if c3k else Bottleneck(self.c, self.c, shortcut, g)) for _ in range(n)
         ) 
     

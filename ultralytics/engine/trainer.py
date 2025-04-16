@@ -596,8 +596,9 @@ class BaseTrainer:
         Returns:
             (dict): Optional checkpoint to resume training from.
         """
+        print(isinstance(self.model, torch.nn.Module)) 
         if isinstance(self.model, torch.nn.Module):  # if model is loaded beforehand. No setup needed
-            return
+           return
 
         cfg, weights = self.model, None
         ckpt = None
