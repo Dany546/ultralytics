@@ -1085,8 +1085,8 @@ class C3k2(C2f):
         print(self.c, y[0].shape)
         for m in self.m:
             print(m)
-            o = m(torch.cat(y,1))
-            print(o.shape)
+            print([yy.shape for yy in y])
+            o = m(torch.cat(y,1)) 
             y.extend(o)
         return self.cv2(torch.cat(y, 1))
     
