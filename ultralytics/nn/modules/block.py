@@ -1076,20 +1076,23 @@ class C3k2(C2f):
         """
         super().__init__(c1, c2, n, shortcut, g, e)
         self.m = nn.ModuleList(   
-            nn.Sequential(nn.Conv2d((2 + _)*self.c, self.c, 1, bias=False),
-            C3k(self.c, self.c, 2, shortcut, g) if c3k else Bottleneck(self.c, self.c, shortcut, g)) for _ in range(n)
+            # nn.Sequential(nn.Conv2d((2 + _)*self.c, self.c, 1, bias=False),
+            C3k(self.c, self.c, 2, shortcut, g) if c3k else Bottleneck(self.c, self.c, shortcut, g) for _ in range(n)
         ) 
-    
+    """
     def forward(self, x):
         # Forward pass through C3k2 layer.
         y = list(self.cv1(x).chunk(2, 1))  
+        y.extend(m(torch.cat(y,1)) for m in self.m)
+        """ 
         for m in self.m: 
             o = m(torch.cat(y,1)) 
             s = o.shape[-3:]
             o = o.view(-1, s[0], s[1], s[2]) 
-            y += [o] # y.extend(o) 
+            y += [o] # 
+        """ 
         return self.cv2(torch.cat(y, 1))
-    
+    """
 
 class C3k(C3):
     """C3k is a CSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
