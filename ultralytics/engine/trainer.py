@@ -1042,7 +1042,7 @@ def _single_tensor_adamw(
         step_t += 1
 
         # Perform stepweight decay
-        param.mul_(1 - lr * weight_decay)
+        param.data.mul_(1 - lr * weight_decay)
 
         device = param.device
 
@@ -1100,9 +1100,9 @@ def _single_tensor_adamw(
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
             if True:
                 grad.mul_(mask) 
-                param.addcdiv_(grad, denom)
+                param.data.addcdiv_(grad, denom)
             else:
-                param.add_(mask, alpha = -lr) 
+                param.data.add_(mask, alpha = -lr) 
         else:
             step = _get_value(step_t)
 
@@ -1126,9 +1126,9 @@ def _single_tensor_adamw(
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
             if True:
                 grad.mul_(mask) 
-                param.addcdiv_(grad, denom, value=-step_size)
+                param.data.addcdiv_(grad, denom, value=-step_size)
             else:
-                param.add_(mask, alpha = -lr)
+                param.data.add_(mask, alpha = -lr)
 
         # Lastly, switch back to complex view
         if amsgrad and torch.is_complex(params[i]):
