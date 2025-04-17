@@ -952,13 +952,7 @@ def adamw(
     # the default when neither have been user-specified. Note that we default to foreach
     # and pass False to use_fused. This is not a mistake--we want to give the fused impl
     # bake-in time before making it the default, even if it is typically faster.
-    if fused is None and foreach is None:
-        _, foreach = _default_to_fused_or_foreach(
-            params, differentiable, use_fused=False
-        )
-        # Do not flip on foreach for the unsupported case where lr is a Tensor and capturable=False.
-        if foreach and isinstance(lr, Tensor) and not capturable:
-            foreach = False
+     
     if fused is None:
         fused = False
     if foreach is None:
