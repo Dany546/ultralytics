@@ -846,6 +846,7 @@ class BaseTrainer:
         return optimizer
 
 from typing import cast, List, Optional, Tuple, Union 
+from torch import Tensor
 
 class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
