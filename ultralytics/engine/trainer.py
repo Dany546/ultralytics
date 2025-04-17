@@ -850,7 +850,7 @@ from torch import Tensor
 
 class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
-        super(self, SAdam).__init__(*args, **kwargs)
+        super(SAdam, self).__init__(*args, **kwargs)
 
     def step(self, closure=None):
         """Perform a single optimization step.
@@ -1026,8 +1026,12 @@ def _single_tensor_adamw(
                     sq / (bias_correction2_sqrt * step_size_neg)
                 ).add_(eps / step_size_neg)
 
-            grad.mul_(((grad - exp_avg).abs() > sq - exp_avg).float()) 
-            param.addcdiv_(grad, denom)
+            mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
+            if True:
+                grad.mul_(mask) 
+                param.addcdiv_(grad, denom)
+            else:
+                param.add_(mask, alpha = -lr) 
         else:
             step = _get_value(step_t)
 
@@ -1048,8 +1052,12 @@ def _single_tensor_adamw(
                 sq = exp_avg_sq.sqrt()
                 denom = (sq / bias_correction2_sqrt).add_(eps)
 
-            grad.mul_(((grad - exp_avg).abs() > sq - exp_avg).float()) 
-            param.addcdiv_(grad, denom, value=-step_size)
+            mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
+            if True:
+                grad.mul_(mask) 
+                param.addcdiv_(grad, denom, value=-step_size)
+            else:
+                param.add_(mask, alpha = -lr)
 
         # Lastly, switch back to complex view
         if amsgrad and torch.is_complex(params[i]):
