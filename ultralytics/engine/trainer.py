@@ -845,29 +845,7 @@ class BaseTrainer:
         )
         return optimizer
 
-from typing import cast, List, Optional, Tuple, Union
-from torch.optim.optimizer import (
-    _capturable_doc,
-    _default_to_fused_or_foreach,
-    _device_dtype_check_for_fused,
-    _differentiable_doc,
-    _disable_dynamo_if_unsupported,
-    _foreach_doc,
-    _fused_doc,
-    _get_capturable_supported_devices,
-    _get_scalar_dtype,
-    _get_value,
-    _maximize_doc,
-    _params_doc,
-    _stack_if_compiling,
-    _use_grad_for_differentiable,
-    _view_as_real,
-    DeviceDict,
-    DeviceDtypeDict,
-    Optimizer,
-    ParamsT,
-)
-
+from typing import cast, List, Optional, Tuple, Union 
 
 class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
@@ -979,14 +957,6 @@ def _single_tensor_adamw(
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]
         step_t = state_steps[i]
-
-        # If compiling, the compiler will handle cudagraph checks, see note [torch.compile x capturable]
-        if not torch.compiler.is_compiling() and capturable:
-            capturable_supported_devices = _get_capturable_supported_devices()
-            assert (
-                param.device.type == step_t.device.type
-                and param.device.type in capturable_supported_devices
-            ), f"If capturable=True, params and state_steps must be on supported devices: {capturable_supported_devices}."
 
         if torch.is_complex(param):
             grad = torch.view_as_real(grad)
