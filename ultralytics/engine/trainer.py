@@ -845,7 +845,7 @@ class BaseTrainer:
         )
         return optimizer
 
-class SAdam(optim.Adam):
+class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
         super(self, SAdam).__init__(*args, **kwargs)
 
