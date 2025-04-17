@@ -845,6 +845,30 @@ class BaseTrainer:
         )
         return optimizer
 
+from typing import cast, List, Optional, Tuple, Union
+from torch.optim.optimizer import (
+    _capturable_doc,
+    _default_to_fused_or_foreach,
+    _device_dtype_check_for_fused,
+    _differentiable_doc,
+    _disable_dynamo_if_unsupported,
+    _foreach_doc,
+    _fused_doc,
+    _get_capturable_supported_devices,
+    _get_scalar_dtype,
+    _get_value,
+    _maximize_doc,
+    _params_doc,
+    _stack_if_compiling,
+    _use_grad_for_differentiable,
+    _view_as_real,
+    DeviceDict,
+    DeviceDtypeDict,
+    Optimizer,
+    ParamsT,
+)
+
+
 class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
         super(self, SAdam).__init__(*args, **kwargs)
