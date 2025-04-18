@@ -852,6 +852,86 @@ class SAdam(optim.AdamW):
     def __init__(self, *args, **kwargs):
         super(SAdam, self).__init__(*args, **kwargs)
 
+    def _init_group(
+        self,
+        group,
+        params_with_grad,
+        grads,
+        amsgrad,
+        exp_avgs,
+        exp_avgs2,
+        exp_avg_sqs,
+        max_exp_avg_sqs,
+        state_steps,
+    ):
+        has_complex = False
+        for p in group["params"]:
+            if p.grad is None:
+                continue
+            has_complex |= torch.is_complex(p)
+            params_with_grad.append(p)
+            if p.grad.is_sparse:
+                raise RuntimeError("AdamW does not support sparse gradients")
+            grads.append(p.grad)
+
+            state = self.state[p]
+
+            # State initialization
+            if len(state) == 0:
+                if group["fused"]:
+                    _device_dtype_check_for_fused(p)
+                # note(crcrpar): Deliberately host `step` on CPU if both capturable and fused are off.
+                # This is because kernel launches are costly on CUDA and XLA.
+                state["step"] = (
+                    torch.zeros(
+                        (),
+                        dtype=_get_scalar_dtype(is_fused=group["fused"]),
+                        device=p.device,
+                    )
+                    if group["capturable"] or group["fused"]
+                    else torch.tensor(0.0, dtype=_get_scalar_dtype())
+                )
+                # Exponential moving average of gradient values
+                state["exp_avg"] = torch.zeros_like(
+                    p, memory_format=torch.preserve_format
+                )
+                state["exp_avg2"] = torch.zeros_like(
+                    p, memory_format=torch.preserve_format
+                )
+                # Exponential moving average of squared gradient values
+                state["exp_avg_sq"] = torch.zeros_like(
+                    p, memory_format=torch.preserve_format
+                )
+                if amsgrad:
+                    # Maintains max of all exp. moving avg. of sq. grad. values
+                    state["max_exp_avg_sq"] = torch.zeros_like(
+                        p, memory_format=torch.preserve_format
+                    )
+
+            exp_avgs.append(state["exp_avg"])
+            exp_avgs2.append(state["exp_avg2"])
+            exp_avg_sqs.append(state["exp_avg_sq"])
+
+            if group["amsgrad"]:
+                max_exp_avg_sqs.append(state["max_exp_avg_sq"])
+            if group["differentiable"] and state["step"].requires_grad:
+                raise RuntimeError(
+                    "`requires_grad` is not supported for `step` in differentiable mode"
+                )
+
+            # Foreach without capturable does not support a tensor lr
+            if (
+                group["foreach"]
+                and isinstance(group["lr"], Tensor)
+                and not group["capturable"]
+            ):
+                raise RuntimeError(
+                    "lr as a Tensor is not supported for capturable=False and foreach=True"
+                )
+
+            state_steps.append(state["step"])
+        return has_complex
+
     def step(self, closure=None):
         """Perform a single optimization step.
 
@@ -870,6 +950,7 @@ class SAdam(optim.AdamW):
             params_with_grad: List[Tensor] = []
             grads: List[Tensor] = []
             exp_avgs: List[Tensor] = []
+            exp_avgs2: List[Tensor] = []
             exp_avg_sqs: List[Tensor] = []
             max_exp_avg_sqs: List[Tensor] = []
             state_steps: List[Tensor] = []
@@ -882,6 +963,7 @@ class SAdam(optim.AdamW):
                 grads,
                 amsgrad,
                 exp_avgs,
+                exp_avgs2,
                 exp_avg_sqs,
                 max_exp_avg_sqs,
                 state_steps,
@@ -891,6 +973,7 @@ class SAdam(optim.AdamW):
                 params_with_grad,
                 grads,
                 exp_avgs,
+                exp_avgs2,
                 exp_avg_sqs,
                 max_exp_avg_sqs,
                 state_steps,
@@ -916,6 +999,7 @@ def adamw(
     params: List[Tensor],
     grads: List[Tensor],
     exp_avgs: List[Tensor],
+    exp_avgs2: List[Tensor],
     exp_avg_sqs: List[Tensor],
     max_exp_avg_sqs: List[Tensor],
     state_steps: List[Tensor],
@@ -967,6 +1051,7 @@ def adamw(
         params,
         grads,
         exp_avgs,
+        exp_avgs2,
         exp_avg_sqs,
         max_exp_avg_sqs,
         state_steps,
@@ -995,6 +1080,7 @@ def _single_tensor_adamw(
     params: List[Tensor],
     grads: List[Tensor],
     exp_avgs: List[Tensor],
+    exp_avgs2: List[Tensor],
     exp_avg_sqs: List[Tensor],
     max_exp_avg_sqs: List[Tensor],
     state_steps: List[Tensor],
@@ -1034,6 +1120,7 @@ def _single_tensor_adamw(
     for i, param in enumerate(params):
         grad = grads[i] if not maximize else -grads[i]
         exp_avg = exp_avgs[i]
+        exp_avg2 = exp_avgs2[i]
         exp_avg_sq = exp_avg_sqs[i]
         step_t = state_steps[i]
 
@@ -1069,7 +1156,7 @@ def _single_tensor_adamw(
             device_beta1 = beta1
 
         # Decay the first and second moment running average coefficient
-        m = exp_avg.clone() 
+        # m = exp_avg.clone() 
         exp_avg.lerp_(grad, 1 - device_beta1)
         exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
 
@@ -1106,13 +1193,12 @@ def _single_tensor_adamw(
                 ).add_(eps / step_size_neg)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
+            exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1))  
             if True:
                 # grad.mul_(mask) 
-                m.lerp_(grad * mask, 0.6)
-                param.data.addcdiv_(m, denom)
-            else:
-                m.lerp_(grad * mask, 0.6)
-                param.data.add_(m.sign_(), alpha = -lr) 
+                param.data.addcdiv_(exp_avg2, denom)
+            else: 
+                param.data.add_(exp_avg2.sign_(), alpha = -lr) 
         else:
             step = _get_value(step_t)
 
@@ -1134,13 +1220,12 @@ def _single_tensor_adamw(
                 denom = (sq / bias_correction2_sqrt).add_(eps)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
+            exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1))  
             if True:
-                grad.mul_(mask) 
-                m.lerp_(grad * mask, 0.6)
-                param.data.addcdiv_(m, denom, value=-step_size)
-            else:
-                m.lerp_(grad * mask, 0.6)
-                param.data.add_(m.sign_(), alpha = -lr)
+                # grad.mul_(mask) 
+                param.data.addcdiv_(exp_avg2, denom, value=-step_size)
+            else: 
+                param.data.add_(exp_avg2.sign_(), alpha = -lr)  
 
         # Lastly, switch back to complex view
         if amsgrad and torch.is_complex(params[i]):
