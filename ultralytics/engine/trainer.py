@@ -1069,6 +1069,7 @@ def _single_tensor_adamw(
             device_beta1 = beta1
 
         # Decay the first and second moment running average coefficient
+        m = exp_avg.clone() 
         exp_avg.lerp_(grad, 1 - device_beta1)
         exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
 
@@ -1105,11 +1106,13 @@ def _single_tensor_adamw(
                 ).add_(eps / step_size_neg)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
-            if False:
-                grad.mul_(mask) 
-                param.data.addcdiv_(grad, denom)
+            if True:
+                # grad.mul_(mask) 
+                m.lerp_(grad * mask, 0.6)
+                param.data.addcdiv_(m, denom)
             else:
-                param.data.add_(grad.sign() * mask, alpha = -lr) 
+                m.lerp_(grad * mask, 0.6)
+                param.data.add_(m.sign_(), alpha = -lr) 
         else:
             step = _get_value(step_t)
 
@@ -1131,11 +1134,13 @@ def _single_tensor_adamw(
                 denom = (sq / bias_correction2_sqrt).add_(eps)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
-            if False:
+            if True:
                 grad.mul_(mask) 
-                param.data.addcdiv_(grad, denom, value=-step_size)
+                m.lerp_(grad * mask, 0.6)
+                param.data.addcdiv_(m, denom, value=-step_size)
             else:
-                param.data.add_(grad.sign() * mask, alpha = -lr)
+                m.lerp_(grad * mask, 0.6)
+                param.data.add_(m.sign_(), alpha = -lr)
 
         # Lastly, switch back to complex view
         if amsgrad and torch.is_complex(params[i]):
