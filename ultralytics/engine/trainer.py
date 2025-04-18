@@ -885,11 +885,11 @@ class SAdam(optim.AdamW):
                 state["step"] = (
                     torch.zeros(
                         (),
-                        dtype=_get_scalar_dtype(is_fused=group["fused"]),
+                        dtype=torch.float32,
                         device=p.device,
                     )
                     if group["capturable"] or group["fused"]
-                    else torch.tensor(0.0, dtype=_get_scalar_dtype())
+                    else torch.tensor(0.0, dtype=torch.float32)
                 )
                 # Exponential moving average of gradient values
                 state["exp_avg"] = torch.zeros_like(
