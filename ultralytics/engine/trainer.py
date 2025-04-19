@@ -1136,7 +1136,7 @@ def _single_tensor_adamw(
         step_t += 1
 
         # Perform stepweight decay
-        grad.div_(param.data.abs() + 1e-6) 
+        # grad.div_(param.data.abs() + 1e-6) 
         param.data.mul_(1 - lr * weight_decay)
 
         device = param.device
