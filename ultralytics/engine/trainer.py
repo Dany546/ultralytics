@@ -1136,7 +1136,7 @@ def _single_tensor_adamw(
         step_t += 1
 
         # Perform stepweight decay
-        # grad.div_(param.data.abs() + 1e-6) 
+        grad.div_(param.data.abs() + 1e-6) 
         param.data.mul_(1 - lr * weight_decay)
 
         device = param.device
@@ -1195,7 +1195,7 @@ def _single_tensor_adamw(
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
             # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
             exp_avg2 = exp_avg.clone().lerp_(grad, 0.1*device_beta1) 
-            if False: # True:
+            if True: # False: # 
                 # grad.mul_(mask) 
                 param.data.addcdiv_(exp_avg, denom)  
             else: 
@@ -1224,7 +1224,7 @@ def _single_tensor_adamw(
             # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
             # exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
             exp_avg2 = exp_avg.clone().lerp_(grad, 0.1*device_beta1) 
-            if False: # True:
+            if True: # False: # 
                 # grad.mul_(mask) 
                 param.data.addcdiv_(exp_avg, denom, value=-step_size)  
             else: 
