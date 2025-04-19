@@ -1193,8 +1193,9 @@ def _single_tensor_adamw(
                 ).add_(eps / step_size_neg)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
-            exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1))  
-            if True:
+            # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
+            exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
+            if False: # True:
                 # grad.mul_(mask) 
                 param.data.addcdiv_(exp_avg, denom)  
             else: 
@@ -1220,12 +1221,13 @@ def _single_tensor_adamw(
                 denom = (sq / bias_correction2_sqrt).add_(eps)
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
-            exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1))  
-            if True:
+            # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
+            exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
+            if False: # True:
                 # grad.mul_(mask) 
-                param.data.addcdiv_(exp_avg, denom, value=-step_size) 
+                param.data.addcdiv_(exp_avg, denom, value=-step_size)  
             else: 
-                param.data.add_(exp_avg2.sign_(), alpha = -lr)  
+                param.data.add_(exp_avg2.sign_(), alpha = -lr) 
 
         # Lastly, switch back to complex view
         if amsgrad and torch.is_complex(params[i]):
