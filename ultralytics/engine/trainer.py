@@ -1194,7 +1194,7 @@ def _single_tensor_adamw(
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
             # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
-            exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
+            exp_avg2 = exp_avg.clone().lerp_(grad, 0.1*device_beta1) 
             if False: # True:
                 # grad.mul_(mask) 
                 param.data.addcdiv_(exp_avg, denom)  
@@ -1222,7 +1222,8 @@ def _single_tensor_adamw(
 
             mask = ((grad - exp_avg).abs() > sq - exp_avg).float()
             # exp_avg2.mul_(1 + mask*(device_beta1 -1)).add_(grad * mask * (1 - device_beta1)) 
-            exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
+            # exp_avg2.lerp_(grad, 1 - 0.9*device_beta1) 
+            exp_avg2 = exp_avg.clone().lerp_(grad, 0.1*device_beta1) 
             if False: # True:
                 # grad.mul_(mask) 
                 param.data.addcdiv_(exp_avg, denom, value=-step_size)  
