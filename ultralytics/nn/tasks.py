@@ -170,11 +170,9 @@ class DistLoss(v8DetectionLoss):
         else: 
             loss_value = torch.sqrt(loss_value -0.5)
         """
+        loss_sum = loss[0]*self.hyp.box + loss[1]*self.hyp.cls + loss[2]*self.hyp.dfl
         
-        loss[0] *= self.hyp.box  # box gain
-        loss[1] *= self.hyp.cls  # cls gain
-        loss[2] *= self.hyp.dfl  # dfl gain  
-        return loss.sum() * batch_size, loss.detach() 
+        return loss_sum * batch_size, loss.detach() 
 
 class BaseModel(torch.nn.Module):
     """The BaseModel class serves as a base class for all the models in the Ultralytics YOLO family."""
