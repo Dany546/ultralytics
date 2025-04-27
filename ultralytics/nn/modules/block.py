@@ -470,6 +470,8 @@ class Bottleneck(nn.Module):
         self.cv1 = Conv(c1, c_, k[0], 1)
         self.cv2 = Conv(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
+        if self.add: # zero init skip as in resnet
+            nn.init.constant_(self.cv2.bn.weight, 0)
 
     def forward(self, x):
         """Apply bottleneck with optional shortcut connection."""
