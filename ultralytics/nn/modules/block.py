@@ -1696,8 +1696,7 @@ class AAttn(nn.Module):
         self.proj = Conv(all_head_dim, dim, 1, act=False)
         self.pe = Conv(all_head_dim, dim, 7, 1, 3, g=dim, act=False)
 
-        B = 8
-        self.expand = LambdaLayer(lambda x: x.unfold(dimension=0, size=B, step=B).permute(0,2,1,3,4).contiguous())  
+        self.B = 8   
 
     def forward(self, x):
         """
@@ -1709,7 +1708,9 @@ class AAttn(nn.Module):
         Returns:
             (torch.Tensor): Output tensor after area-attention.
         """ 
-        qkv = self.expand(self.qkv(x)).flatten(2).transpose(1, 2)
+        qkv = self.qkv(x)
+        qkv = qkv.unfold(dimension=0, size=self.B, step=self.B).permute(0,2,1,3,4).contiguous()
+        qkv = qkv.flatten(2).transpose(1, 2)
         B, N, _ = qkv.shape 
         BD, C, H, W = x.shape
         D = BD//B
