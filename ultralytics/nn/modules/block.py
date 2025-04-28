@@ -1696,6 +1696,9 @@ class AAttn(nn.Module):
         self.proj = Conv(all_head_dim, dim, 1, act=False)
         self.pe = Conv(all_head_dim, dim, 7, 1, 3, g=dim, act=False)
 
+        B = 8
+        self.expand = LambdaLayer(lambda x: x.unfold(dimension=0, size=B, step=B).permute(0,2,1,3,4).contiguous())  
+
     def forward(self, x):
         """
         Process the input tensor through the area-attention.
@@ -1705,11 +1708,12 @@ class AAttn(nn.Module):
 
         Returns:
             (torch.Tensor): Output tensor after area-attention.
-        """
-        B, C, H, W = x.shape
-        N = H * W
-
-        qkv = self.qkv(x).flatten(2).transpose(1, 2)
+        """ 
+        qkv = self.expand(self.qkv(x)).flatten(2).transpose(1, 2)
+        B, N, _ = qkv.shape 
+        BD, C, H, W = x.shape
+        D = BD//B
+        # N = H * W
         if self.area > 1:
             qkv = qkv.reshape(B * self.area, N // self.area, C * 3)
             B, N, _ = qkv.shape
@@ -1729,8 +1733,10 @@ class AAttn(nn.Module):
             v = v.reshape(B // self.area, N * self.area, C)
             B, N, _ = x.shape
 
-        x = x.reshape(B, H, W, C).permute(0, 3, 1, 2).contiguous()
-        v = v.reshape(B, H, W, C).permute(0, 3, 1, 2).contiguous()
+        x = x.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
+        x = torch.cat([x[:,:, i] for i in range(x.shape[2])], dim=0).contiguous() 
+        v = v.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
+        v = torch.cat([v[:,:, i] for i in range(v.shape[2])], dim=0).contiguous() 
 
         x = x + self.pe(v)
         return self.proj(x)
