@@ -1709,7 +1709,7 @@ class AAttn(nn.Module):
         """ 
         self.B = 8 
         qkv = self.qkv(x)
-        qkv = qkv.unfold(dimension=0, size=self.B, step=self.B).permute(0,2,1,3,4).contiguous()
+        qkv = qkv.unfold(dimension=0, size=self.B, step=self.B).permute(0,1,4,2,3)
         print(x.shape, qkv.shape, qkv.flatten(2).shape, qkv.flatten(2).transpose(1, 2).shape )
         qkv = qkv.flatten(2).transpose(1, 2)
         B, N, _ = qkv.shape 
