@@ -174,8 +174,7 @@ class BaseDataset(Dataset):
             self.image_ids = list(set(["_".join(im.split(os.sep)[-1].split("_")[:-1]) for im in im_files]))  
             self.n_images = len(self.image_ids) 
             self.image_ids = [[imf for imf, f in enumerate(im_files) if "_".join(f.split(os.sep)[-1].split("_")[:-1])==name] for name in self.image_ids]
-            self.depth_ = np.array([len(ids) for ids in self.image_ids]).max()
-            print(self.depth_, [len(ids) for ids in self.image_ids]) 
+            self.depth_ = np.array([len(ids) for ids in self.image_ids]).max() 
             # self.img_files = sorted([x for x in f if x.suffix[1:].lower() in IMG_FORMATS])  # pathlib
             assert im_files, f"{self.prefix}No images found in {img_path}. {FORMATS_HELP_MSG}"
         except Exception as e:
@@ -388,7 +387,7 @@ class BaseDataset(Dataset):
             pad_item = deepcopy(items[-1])
             items += [pad_item for _ in range(self.depth_-len(self.image_ids[index]))]
             # pad_item["img"] = 0*pad_item["img"]
-        print(len(self.image_ids[index]), self.depth_, len(items))
+            print(len(self.image_ids[index]), self.depth_, len(items))
         item = self.collate_fn(items, first=True)   
         return item
         

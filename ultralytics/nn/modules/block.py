@@ -1737,11 +1737,11 @@ class AAttn(nn.Module):
             v = v.reshape(B // self.area, N * self.area, C)
             B, N, _ = x.shape
 
-        x = x.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
-        x = torch.cat([x[i] for i in range(x.shape[0])], dim=0).contiguous()
+        x = x.reshape(B, D, H, W, C) 
+        x = torch.cat([x[i] for i in range(x.shape[0])], dim=0).permute(0, 3, 1, 2).contiguous()
         # x = torch.cat([x[:,:, i] for i in range(x.shape[2])], dim=0).contiguous() 
-        v = v.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
-        v = torch.cat([v[i] for i in range(v.shape[0])], dim=0).contiguous()
+        v = v.reshape(B, D, H, W, C)
+        v = torch.cat([v[i] for i in range(v.shape[0])], dim=0).permute(0, 3, 1, 2).contiguous()
         # v = torch.cat([v[:,:, i] for i in range(v.shape[2])], dim=0).contiguous() 
 
         x = x + self.pe(v)
