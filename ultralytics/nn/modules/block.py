@@ -1707,7 +1707,7 @@ class AAttn(nn.Module):
         Returns:
             (torch.Tensor): Output tensor after area-attention.
         """ 
-        self.B = 2
+        self.B = 1
         BD, C, H, W = x.shape
         D = BD//self.B
 
