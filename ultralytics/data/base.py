@@ -378,7 +378,9 @@ class BaseDataset(Dataset):
         if self.augment:
             self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
         items = []  # ; shapes = [] 
+        r_state = random.get_state() ; n_state = np.random.get_state()
         for ind in self.image_ids[index]:
+            random.set_state(r_state) ; np.random.set_state(n_state) # use same data augmentation for all slices
             item = self.get_image_and_label(ind) 
             item = self.transforms(item)
             item["img"] = item["img"].unsqueeze(0) 
