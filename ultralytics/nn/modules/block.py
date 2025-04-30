@@ -1712,7 +1712,8 @@ class AAttn(nn.Module):
         D = BD//self.B
 
         qkv = self.qkv(x)
-        qkv = qkv.unfold(dimension=0, size=D, step=D).permute(0,1,4,2,3) 
+        qkv = torch.cat(list(qkv.unsqueeze(2).chunk(self.B,0)),dim=2).permute(2,1,0,3,4)  
+        # qkv = qkv.unfold(dimension=0, size=D, step=D).permute(0,1,4,2,3) 
         qkv = qkv.flatten(2).transpose(1, 2)
         B, N, _ = qkv.shape
 
@@ -1737,9 +1738,11 @@ class AAttn(nn.Module):
             B, N, _ = x.shape
 
         x = x.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
-        x = torch.cat([x[:,:, i] for i in range(x.shape[2])], dim=0).contiguous() 
+        x = torch.cat([x[i] for i in range(x.shape[0])], dim=0).contiguous()
+        # x = torch.cat([x[:,:, i] for i in range(x.shape[2])], dim=0).contiguous() 
         v = v.reshape(B, D, H, W, C).permute(0, 4, 1, 2, 3)
-        v = torch.cat([v[:,:, i] for i in range(v.shape[2])], dim=0).contiguous() 
+        v = torch.cat([v[i] for i in range(v.shape[0])], dim=0).contiguous()
+        # v = torch.cat([v[:,:, i] for i in range(v.shape[2])], dim=0).contiguous() 
 
         x = x + self.pe(v)
         return self.proj(x)
