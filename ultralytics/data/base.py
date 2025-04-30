@@ -383,11 +383,11 @@ class BaseDataset(Dataset):
             item = self.transforms(item)
             item["img"] = item["img"].unsqueeze(0) 
             items.append(item)  
-        # print(len(self.image_ids[index])<self.depth_)
         if len(self.image_ids[index])<self.depth_:
-            pad_item = deepcopy(item)
+            pad_item = deepcopy(items[-1])
             items += [pad_item for _ in range(self.depth_-len(self.image_ids[index]))]
             # pad_item["img"] = 0*pad_item["img"]
+        print(len(self.image_ids[index]), self.depth_, len(items))
         item = self.collate_fn(items, first=True)   
         return item
         
