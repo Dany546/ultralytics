@@ -175,6 +175,8 @@ class BaseDataset(Dataset):
             self.n_images = len(self.image_ids)
             self.image_ids = [[imf for imf, f in enumerate(im_files) if "_".join(f.split(os.sep)[-1].split("_")[1:3])==name] for name in self.image_ids]
             print(np.array([len(ids) for ids in self.image_ids]))
+            print(self.image_ids )
+            assert 1==0
             self.depth_ = np.array([len(ids) for ids in self.image_ids]).max()
             # self.img_files = sorted([x for x in f if x.suffix[1:].lower() in IMG_FORMATS])  # pathlib
             assert im_files, f"{self.prefix}No images found in {img_path}. {FORMATS_HELP_MSG}"

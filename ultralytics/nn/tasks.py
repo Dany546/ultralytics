@@ -225,8 +225,7 @@ class BaseModel(torch.nn.Module):
 
         Returns:
             (torch.Tensor): The last output of the model.
-        """
-        print(x.shape)
+        """ 
         _layer = 0
         y, dt, embeddings = [], [], []  # outputs
         for m in self.model: 
