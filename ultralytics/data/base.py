@@ -171,10 +171,9 @@ class BaseDataset(Dataset):
                 else:
                     raise FileNotFoundError(f"{self.prefix}{p} does not exist")
             im_files = sorted(x.replace("/", os.sep) for x in f if x.split(".")[-1].lower() in IMG_FORMATS)
-            self.image_ids = list(set(["_".join(im.split(os.sep)[-1].split("_")[1:-3]) for im in im_files])) 
-            print(self.image_ids, im_files[-10:])
+            self.image_ids = list(set(["_".join(im.split(os.sep)[-1].split("_")[1:-4]) for im in im_files]))  
             self.n_images = len(self.image_ids) 
-            self.image_ids = [[imf for imf, f in enumerate(im_files) if "_".join(f.split(os.sep)[-1].split("_")[1:-3])==name] for name in self.image_ids]
+            self.image_ids = [[imf for imf, f in enumerate(im_files) if "_".join(f.split(os.sep)[-1].split("_")[1:-4])==name] for name in self.image_ids]
             self.depth_ = np.array([len(ids) for ids in self.image_ids]).max()
             print(self.depth_, [len(ids) for ids in self.image_ids])
             assert 1==0
