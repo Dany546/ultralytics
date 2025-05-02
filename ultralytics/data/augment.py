@@ -542,6 +542,7 @@ class Mosaic(BaseMixTransform):
         self.border = (-imgsz // 2, -imgsz // 2)  # width, height
         self.mosaic_center = None
         self.n = n
+        self.indexes = None  
 
     def get_indexes(self, buffer=True):
         """
@@ -563,6 +564,8 @@ class Mosaic(BaseMixTransform):
             >>> indexes = mosaic.get_indexes()
             >>> print(len(indexes))  # Output: 3
         """
+        if self.indexes:
+            return self.indexes
         if buffer:  # select images from buffer
             return random.choices(list(self.dataset.buffer), k=self.n - 1)
         else:  # select any images

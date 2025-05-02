@@ -371,20 +371,24 @@ class BaseDataset(Dataset):
 
         self.batch_shapes = np.ceil(np.array(shapes) * self.imgsz / self.stride + self.pad).astype(int) * self.stride
         self.batch = bi  # batch index of image
-
+ 
     def __getitem__(self, index):
         """Return transformed label information for given index.""" 
         s = self.imgsz
         if self.augment:
-            self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))   
-        items = []  # ; shapes = [] 
+            self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))
+            indexes = [random.uniform(0, self.n_images) for _ in (0,0,0,0)]
+            indexes = [self.image_ids[ind] for ind in indexes]
+        items = []  # ; shapes = []  
         r_state = random.getstate() ; n_state = np.random.get_state()
-        for ind in self.image_ids[index]:
+        for iind, ind in enumerate(self.image_ids[index]):
             random.setstate(r_state) ; np.random.set_state(n_state) # use same data augmentation for all slices
-            item = self.get_image_and_label(ind) 
+            item = self.get_image_and_label(ind)
+            if self.augment: 
+                self.transforms[0][0].indexes = [indexs[iind] for indexs in indexes]
             item = self.transforms(item)
-            item["img"] = item["img"].unsqueeze(0) 
-            items.append(item)  
+            item["img"] = item["img"].unsqueeze(0)  
+            items.append(item)    
         if len(self.image_ids[index])<self.depth_:
             pad_item = deepcopy(items[-1])
             items += [pad_item for _ in range(self.depth_-len(self.image_ids[index]))]
