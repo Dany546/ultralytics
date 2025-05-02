@@ -377,7 +377,7 @@ class BaseDataset(Dataset):
         s = self.imgsz
         if self.augment:
             self.transforms[0][0].mosaic_center = (int(random.uniform(-x, 2 * s + x)) for x in (-s//2, -s//2))
-            indexes = [random.uniform(0, self.n_images) for _ in (0,0,0,0)]
+            indexes = [int(random.uniform(0, self.n_images)) for _ in (0,0,0,0)]
             indexes = [self.image_ids[ind] for ind in indexes]
         items = []  # ; shapes = []  
         r_state = random.getstate() ; n_state = np.random.get_state()
