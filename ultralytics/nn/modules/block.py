@@ -1712,7 +1712,7 @@ class AAttn(nn.Module):
         D = BD//self.B
 
         qkv = self.qkv(x)
-        qkv = torch.cat(list(qkv.unsqueeze(2).chunk(self.B,0)),dim=2).permute(2,1,0,3,4)  
+        qkv = torch.cat(list(qkv.unsqueeze(2).chunk(self.B,0)),dim=2).permute(2,1,0,3,4).contiguous() 
         # qkv = qkv.unfold(dimension=0, size=D, step=D).permute(0,1,4,2,3) 
         qkv = qkv.flatten(2).transpose(1, 2)
         B, N, _ = qkv.shape
