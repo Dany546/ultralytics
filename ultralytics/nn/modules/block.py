@@ -1726,9 +1726,26 @@ class AAttn(nn.Module):
             .permute(0, 2, 3, 1)
             .split([self.head_dim, self.head_dim, self.head_dim], dim=2)
         )
-        attn = (q.transpose(-2, -1) @ k) * (self.head_dim**-0.5)
-        attn = attn.softmax(dim=-1)
-        x = v @ attn.transpose(-2, -1)
+        # attn = (q.transpose(-2, -1) @ k) * (self.head_dim**-0.5)
+        # attn = attn.softmax(dim=-1)
+        # x = v @ attn.transpose(-2, -1)
+
+        # Split the tensors into chunks to save memory
+        q = q.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
+        k = k.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
+        v = v.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
+
+        # Perform attention calculation on each chunk
+        x = []
+        for q_chunk, k_chunk, v_chunk in zip(q, k, v):
+            attn_chunk = torch.einsum('bnqd,bnkd->bnqk', q_chunk, k_chunk) * (self.head_dim**-0.5)
+            attn_chunk = attn_chunk.softmax(dim=-1)
+            attn_chunk = torch.einsum('bnqk,bnvd->bnqv', attn_chunk, v_chunk)
+            x.append(attn_chunk)
+
+        # Concatenate the chunks to form the final output
+        x = torch.cat(x, dim=1)
+
         x = x.permute(0, 3, 1, 2)
         v = v.permute(0, 3, 1, 2)
 
