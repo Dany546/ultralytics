@@ -1732,12 +1732,11 @@ class AAttn(nn.Module):
 
         # Split the tensors into chunks to save memory
         q = q.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
-        k = k.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
-        v = v.chunk(self.num_heads, dim=1)  # Splits along the heads dimension
+        k = k.chunk(self.num_heads, dim=1)  # Splits along the heads dimension 
 
         # Perform attention calculation on each chunk
         x = []
-        for q_chunk, k_chunk, v_chunk in zip(q, k, v):
+        for q_chunk, k_chunk, v_chunk in zip(q, k, v.chunk(self.num_heads, dim=1)):
             attn_chunk = torch.einsum('bnqd,bnkd->bnqk', q_chunk, k_chunk) * (self.head_dim**-0.5)
             attn_chunk = attn_chunk.softmax(dim=-1)
             attn_chunk = torch.einsum('bnqk,bnvd->bnqv', attn_chunk, v_chunk)
